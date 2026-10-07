@@ -42,7 +42,11 @@ test(optimizer_removes_identities_and_cancellations) :-
 test(optimizer_rejects_incorrect_examples, [fail]) :-
     optimize_pipeline([reverse, reverse], [io([a, b], [b, a])], _).
 
-test(invalid_window_fails, [fail]) :-
+test(optimizer_requires_validation_examples, [fail]) :-
+    optimize_pipeline([reverse, reverse], [], _).
+
+test(invalid_window_is_rejected,
+     [throws(error(type_error(positive_integer, 0), _))]) :-
     run_task(moving_average(0), [1, 2], _).
 
 :- end_tests(benchmark_algorithms).

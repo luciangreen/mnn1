@@ -16,15 +16,15 @@ run_task(identity, Input, Input).
 run_task(reverse, Input, Output) :-
     must_be(list, Input),
     reverse(Input, Output).
-run_task(rotate_left, [], []).
-run_task(rotate_left, [Head|Tail], Output) :-
-    append(Tail, [Head], Output).
+run_task(rotate_left, Input, Output) :-
+    must_be(list, Input),
+    rotate_left(Input, Output).
 run_task(deduplicate, Input, Output) :-
     must_be(list, Input),
     list_to_set(Input, Output).
 run_task(run_length_encode, Input, Output) :-
     must_be(list, Input),
-    run_length_encode_(Input, Output).
+    run_length_encode(Input, Output).
 run_task(cumulative_sum, Input, Output) :-
     must_be(list, Input),
     cumulative_sum_(Input, 0, Output).
@@ -49,12 +49,15 @@ run_task(composition(Algorithms), Input, Output) :-
     must_be(list, Algorithms),
     run_pipeline(Algorithms, Input, Output).
 run_task(conditional_route(Threshold, Below, AtOrAbove), Input, Output) :-
+    number(Threshold),
     number(Input),
     ( Input < Threshold -> Algorithm = Below ; Algorithm = AtOrAbove ),
     run_task(Algorithm, Input, Output).
 
-run_length_encode([], []).
+run_length_encode([], []) :-
+    !.
 run_length_encode([Head|Tail], [[Head, Count]|Encoded]) :-
+    !,
     take_same(Tail, Head, 1, Count, Rest),
     run_length_encode(Rest, Encoded).
 
@@ -64,8 +67,10 @@ take_same([Head|Tail], Head, Accumulator, Count, Rest) :-
     take_same(Tail, Head, Next, Count, Rest).
 take_same(Rest, _, Count, Count, Rest).
 
-cumulative_sum_([], _, []).
+cumulative_sum_([], _, []) :-
+    !.
 cumulative_sum_([Head|Tail], Accumulator, [Sum|Sums]) :-
+    !,
     number(Head),
     Sum is Accumulator + Head,
     cumulative_sum_(Tail, Sum, Sums).
@@ -76,7 +81,8 @@ moving_average(Input, Window, Averages) :-
 
 moving_average_(Input, Window, [Average|Averages]) :-
     length(Prefix, Window),
-    append(Prefix, [_|_], Input),
+    append(Prefix, _, Input),
+    !,
     maplist(must_be_number, Prefix),
     sum_list(Prefix, Sum),
     Average is Sum / Window,
@@ -111,7 +117,8 @@ argmax_window(Values, Window, Results) :-
 
 argmax_window_(Values, Window, Start, [argmax(Start, Index, Maximum)|Results]) :-
     length(Prefix, Window),
-    append(Prefix, [_|_], Values),
+    append(Prefix, _, Values),
+    !,
     maplist(must_be_number, Prefix),
     argmax_in_window(Prefix, Start, Index, Maximum),
     NextStart is Start + 1,
@@ -140,7 +147,8 @@ rule_chain(Start, Goal, Edges, Path) :-
     rule_chain_(Start, Goal, Edges, [Start], Reversed),
     reverse(Reversed, Path).
 
-rule_chain_(Goal, Goal, _, Path, Path).
+rule_chain_(Goal, Goal, _, Path, Path) :-
+    !.
 rule_chain_(Current, Goal, Edges, Visited, Path) :-
     member(edge(Current, Next), Edges),
     \+ memberchk(Next, Visited),
@@ -159,6 +167,7 @@ optimize_pipeline(Pipeline, Optimized) :-
 
 optimize_pipeline(Pipeline, Examples, Optimized) :-
     must_be(list, Examples),
+    Examples \= [],
     optimize_pipeline(Pipeline, Candidate),
     maplist(equivalent_pipeline(Pipeline, Candidate), Examples),
     Optimized = Candidate.
@@ -169,6 +178,10 @@ optimize_pipeline_([reverse, reverse|Tail], Optimized) :-
 optimize_pipeline_([Algorithm|Tail], [Algorithm|Optimized]) :-
     optimize_pipeline_(Tail, Optimized).
 optimize_pipeline_([], []).
+
+rotate_left([], []).
+rotate_left([Head|Tail], Output) :-
+    append(Tail, [Head], Output).
 
 equivalent_pipeline(Original, Optimized, io(Input, Expected)) :-
     run_pipeline(Original, Input, OriginalOutput),
