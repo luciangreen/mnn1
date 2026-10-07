@@ -27,12 +27,20 @@ The runnable foundation currently provides:
   are unavailable instead of claiming to perform those optimisations.
 - A reproducible 3 × 3 × 3 × 3 synthetic scene generator and explicit held-out
   combination splitting.
+- Deterministic benchmark task algorithms for sequence, numeric, time-series,
+  ranking, rule-chain and composition tasks, with a validation-gated pipeline
+  simplifier (`benchmarks/benchmark_algorithms.pl`).
 
 This is a starting core, not a claim that every item in the full MNN1 research
 specification is implemented. In particular, general program synthesis,
 typed/higher-order template gaps, contradiction handling, parallel execution,
 external benchmark downloads, a browser UI, and the full Loop2/PLOP/
 AlgebraPLOP ecosystem remain future work.
+
+The benchmark algorithms are reference operations, not an NN/LLM comparison or
+general-purpose optimizer. The supplied benchmark archive still requires
+MNN2/NN baselines, task-safe training/test splits, and a complete run protocol
+before it can produce comparative results.
 
 ## Concepts
 
@@ -103,4 +111,6 @@ Actions on pushes and pull requests.
 - `datasets/mnn_synthetic.pl` — systematic multivariate combinations/splits.
 - `benchmarks/mnn_benchmark.pl` — exact-match evaluation against a literal
   lookup baseline and seen/unseen generalisation ratios.
+- `benchmarks/benchmark_algorithms.pl` — deterministic benchmark task operations
+  and equivalence-checked pipeline simplification.
 - `tests/` — SWI-Prolog plunit test runner and focused tests.
